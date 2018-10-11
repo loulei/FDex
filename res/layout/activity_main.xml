@@ -4,5 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
     
+    <ListView 
+        android:id="@+id/lv_apps"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="#00000000"
+        android:listSelector="#FF5555dd"/>
 
 </LinearLayout>

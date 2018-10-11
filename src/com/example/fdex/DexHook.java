@@ -6,17 +6,25 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 
 import android.os.Environment;
+import android.text.TextUtils;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class DexHook implements IXposedHookLoadPackage {
 
 	@Override
-	public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+	public void handleLoadPackage(final LoadPackageParam lpparam) throws Throwable {
 		// TODO Auto-generated method stub
-		if("im.chaoxin".equals(lpparam.packageName)){
+		XSharedPreferences preferences = new XSharedPreferences("com.example.fdex");
+		String packageName = preferences.getString("packageName", null);
+		String appName = preferences.getString("appName", null);
+		if(TextUtils.isEmpty(packageName))
+			return;
+		if(packageName.equals(lpparam.packageName)){
+			System.out.println("app " + appName + " launch");
 			Class<?> dexClazz = Class.forName("com.android.dex.Dex");
 			Class<?> clazz = Class.forName("java.lang.Class");
 			final Method getDexMd = clazz.getDeclaredMethod("getDex");
@@ -33,7 +41,7 @@ public class DexHook implements IXposedHookLoadPackage {
 						Object dex = getDexMd.invoke(clazz);
 						byte[] dexBytes = (byte[]) getBytesMd.invoke(dex);
 						if(dexBytes != null){
-							File dexFile = new File(Environment.getExternalStorageDirectory().getPath(), "dump_dex_"+dexBytes.length+".dex");
+							File dexFile = new File("/data/data/"+lpparam.packageName, "dump_dex_"+dexBytes.length+".dex");
 							if(dexFile.exists()){
 								return;
 							}else{
